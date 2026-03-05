@@ -78,7 +78,10 @@ python main.py help
 ```bash
 python main.py download "Drake" --album "Take Care"
 ```
-
+### Download a single track
+```bash
+python main.py download "Drake" --track "God's Plan"
+```
 ### Browse full discography and pick
 ```bash
 python main.py download "Drake"
