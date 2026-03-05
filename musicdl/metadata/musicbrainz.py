@@ -524,3 +524,93 @@ class MusicBrainzClient:
                 country=a.get("country"),
             ))
         return albums
+
+    def find_track(self, artist: Artist, track_title: str) -> Optional[Album]:
+        """
+        Search for a single track by title and return a minimal Album
+        containing just that one track — ready for the download pipeline.
+
+        Strategy:
+          1. Search MusicBrainz recordings for artist + title
+          2. Pick the best match (official release, closest title)
+          3. Return a minimal Album with just that track
+        """
+        cache_key = f"mb:track:{artist.mbid}:{track_title.lower().strip()}"
+        cached = self._cache.get(cache_key)
+        if cached is not None:
+            result = self._deserialise_albums([cached], artist)
+            return result[0] if result else None
+
+        logger.debug("Searching for track %r by %s", track_title, artist.name)
+        self._throttle()
+        try:
+            result = mb.search_recordings(
+                recording=track_title,
+                artist=artist.name,
+                limit=10,
+            )
+        except (mb.NetworkError, mb.ResponseError) as exc:
+            raise MetadataError(f"Track search failed: {exc}") from exc
+
+        recordings = result.get("recording-list", [])
+        if not recordings:
+            return None
+
+        # Pick best match — prefer official releases, closest title match
+        best_rec = self._pick_best_recording(recordings, track_title)
+        if not best_rec:
+            return None
+
+        # Extract track info
+        track = Track(
+            title=best_rec.get("title") or track_title,
+            track_number=1,
+            disc_number=1,
+            duration_ms=int(best_rec["length"]) if best_rec.get("length") else None,
+            mbid=best_rec.get("id"),
+        )
+
+        # Get album info from the first release in the recording
+        release_list = best_rec.get("release-list") or []
+        album_title = "Single"
+        year = None
+        mbid = None
+
+        if release_list:
+            rel = release_list[0]
+            album_title = rel.get("title") or track.title
+            year = self._extract_year(
+                rel.get("date", "") or
+                rel.get("release-event-list", [{}])[0].get("date", "")
+                if rel.get("release-event-list") else ""
+            )
+            mbid = rel.get("id")
+
+        album = Album(
+            title=album_title,
+            artist=artist,
+            tracks=(track,),
+            year=year,
+            release_type=ReleaseType.SINGLE,
+            mbid=mbid,
+        )
+
+        self._cache.set(cache_key, self._serialise_albums([album])[0])
+        return album
+
+    @staticmethod
+    def _pick_best_recording(recordings: list, target_title: str) -> Optional[dict]:
+        """Pick the best recording match — prefer official releases, exact title."""
+        target = target_title.lower().strip()
+
+        def score(rec: dict) -> tuple:
+            title_match = rec.get("title", "").lower().strip() == target
+            releases    = rec.get("release-list") or []
+            has_official = any(
+                r.get("status", "").lower() == "official" for r in releases
+            )
+            has_release = len(releases) > 0
+            return (title_match, has_official, has_release)
+
+        scored = sorted(recordings, key=score, reverse=True)
+        return scored[0] if scored else None

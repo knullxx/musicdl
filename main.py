@@ -62,6 +62,9 @@ DOWNLOAD EXAMPLES
   # Download a specific album
   python main.py download "Drake" --album "Take Care"
 
+  # Download a single track
+  python main.py download "Drake" --track "God's Plan"
+
   # Download entire discography
   python main.py download "Drake"
 
@@ -143,6 +146,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     # Download options
     parser.add_argument("--album",     metavar="NAME",  help="Target a specific album")
+    parser.add_argument("--track",     metavar="NAME",  help="Download a single track")
     parser.add_argument("--spotify",   metavar="URL",   help="Spotify track/album/playlist URL")
     parser.add_argument("--format",    default=None,    choices=["mp3","flac","m4a","opus"], help="Audio format")
     parser.add_argument("--quality",   default=None,    choices=["320k","256k","128k","best"],     help="Audio quality")
@@ -343,26 +347,45 @@ def cmd_download(args, settings):
         artist   = pick_artist(mb, args.artist)
         print_success(f"Selected: {artist.name}")
 
-        releases = fetch_and_filter_releases(mb, artist, args)
+        # ── Single track path ──────────────────────────────────────────────
+        if args.track:
+            print_info(f"Searching for track: {args.track!r}")
+            try:
+                album = mb.find_track(artist, args.track)
+            except Exception as e:
+                print_error(f"Track search failed: {e}")
+                sys.exit(1)
 
-        # If no specific album, show list and let user pick
-        if not args.album:
-            print_section(f"Releases for {artist.name}")
-            print_album_table(releases)
-            print("\n  Enter a number to pick ONE release, or press Enter for ALL:")
-            choice = input("  Choice: ").strip()
-            if choice:
-                try:
-                    releases = [releases[int(choice) - 1]]
-                    print_success(f"Selected: {releases[0]['title']}")
-                except (ValueError, IndexError):
-                    print_warning("Invalid choice, downloading all.")
+            if not album:
+                print_error(f"Could not find track '{args.track}' by {artist.name}")
+                print_info("Try checking the spelling or use --album to download the full album")
+                sys.exit(1)
 
-        # Apply limit
-        if args.limit:
-            releases = releases[:args.limit]
+            track = album.tracks[0]
+            print_success(f"Found: {track.title} — from {album.title} ({album.year or '????'})")
+            albums = [album]
 
-        albums = fetch_album_details(mb, releases, artist)
+        else:
+            releases = fetch_and_filter_releases(mb, artist, args)
+
+            # If no specific album, show list and let user pick
+            if not args.album:
+                print_section(f"Releases for {artist.name}")
+                print_album_table(releases)
+                print("\n  Enter a number to pick ONE release, or press Enter for ALL:")
+                choice = input("  Choice: ").strip()
+                if choice:
+                    try:
+                        releases = [releases[int(choice) - 1]]
+                        print_success(f"Selected: {releases[0]['title']}")
+                    except (ValueError, IndexError):
+                        print_warning("Invalid choice, downloading all.")
+
+            # Apply limit
+            if args.limit:
+                releases = releases[:args.limit]
+
+            albums = fetch_album_details(mb, releases, artist)
 
     if not albums:
         print_error("No downloadable albums found.")
