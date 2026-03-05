@@ -8,18 +8,18 @@ Built with Python, [yt-dlp](https://github.com/yt-dlp/yt-dlp), and the [MusicBra
 
 ## Features
 
-- 🔍 Search any artist by name
-- 📀 Browse their full discography instantly
-- 🎯 Download a specific album or entire discography
-- 🎵 YouTube + SoundCloud as sources (automatic fallback)
-- 🏷️ Automatically embeds metadata (title, artist, album, track number, year)
-- 🖼️ Downloads album artwork and embeds it in files
-- ⏭️ Skips already-downloaded tracks automatically
-- 💾 Caches MusicBrainz lookups so repeat searches are instant
-- 📁 Organizes files into `Music/Artist/Album (Year)/` folders
-- 🎤 Handles explicit track names (profanity filter for search queries)
-- 🗄️ SQLite library to track everything you've downloaded
-- 🎨 Pretty tables and progress bars (with `rich`)
+- Search any artist by name
+- Browse their full discography instantly
+- Download a specific album or entire discography
+- YouTube + SoundCloud as sources (automatic fallback)
+- Automatically embeds metadata (title, artist, album, track number, year)
+- Downloads album artwork and embeds it in files
+- Skips already-downloaded tracks automatically
+- Caches MusicBrainz lookups so repeat searches are instant
+- Organizes files into `Music/Artist/Album (Year)/` folders
+- Handles explicit track names (profanity filter for search queries)
+- SQLite library to track everything you've downloaded
+- Pretty tables and progress bars (with `rich`)
 
 
 ---
