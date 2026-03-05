@@ -238,6 +238,8 @@ embed_metadata: true
 
 This tool is for personal and educational use only. Only download music you have the right to access.
 
+## Issues
+Found a bug? Open an issue on [GitHub](https://github.com/knullxx/musicdl/issues)
 ---
 
 ## License
