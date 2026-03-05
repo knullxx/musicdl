@@ -20,7 +20,7 @@ Built with Python, [yt-dlp](https://github.com/yt-dlp/yt-dlp), and the [MusicBra
 - 🎤 Handles explicit track names (profanity filter for search queries)
 - 🗄️ SQLite library to track everything you've downloaded
 - 🎨 Pretty tables and progress bars (with `rich`)
-- 🔗 Spotify URL support (album, playlist, track)
+
 
 ---
 
@@ -85,11 +85,6 @@ python main.py download "Drake" --track "God's Plan"
 ### Browse full discography and pick
 ```bash
 python main.py download "Drake"
-```
-
-### Download from a Spotify link
-```bash
-python main.py download --spotify "https://open.spotify.com/album/xxx"
 ```
 
 ### Dry run (preview without downloading)
