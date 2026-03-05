@@ -35,14 +35,15 @@ Built with Python, [yt-dlp](https://github.com/yt-dlp/yt-dlp), and the [MusicBra
 
 **1. Clone the repo**
 ```bash
-git clone https://github.com/yourusername/musicdl.git
+git clone https://github.com/knullxx/musicdl.git
 cd musicdl
 ```
 
 **2. Install Python dependencies**
 ```bash
-pip install musicbrainzngs tenacity pyyaml mutagen yt-dlp aiohttp aiofiles rich
+pip install -r requirements.txt
 ```
+
 
 **3. Install FFmpeg**
 
